@@ -5,7 +5,7 @@
         	"name": "Persona",
         	"attributes": [
 				{
-					"name": "Nombre",
+					"name": "nombre",
 					"type": "String",
 					"visibility": "private",
 					"isStatic": false,
