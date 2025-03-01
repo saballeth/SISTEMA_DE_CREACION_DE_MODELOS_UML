@@ -1,0 +1,18 @@
+{
+    "diagramType": "classDiagram",
+    "classes": [
+      	{
+        	"name": "Persona",
+        	"attributes": [
+				{
+					"name": "Nombre",
+					"type": "String",
+					"visibility": "private",
+					"isStatic": false,
+					"isFinal": false
+				}
+        	],
+			"isAbstract": false
+      	}
+    ]
+}
