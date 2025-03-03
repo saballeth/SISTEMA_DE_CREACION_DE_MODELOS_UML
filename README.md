@@ -75,5 +75,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 react-speech-recognition Library supports commands, for example try asking the following:
 
 What time is it?
+
 I would like to order some pasta, please.
+
 We can define what actions can be taken if a commands matches the transcript.
