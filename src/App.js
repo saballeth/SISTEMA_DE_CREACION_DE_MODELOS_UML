@@ -10,39 +10,71 @@ import SpeechRecognition, {
 } from "react-speech-recognition";
 
 function App() {
-  const [message, setMessage] = useState();
-  const supporstGeoLocation = navigator.geolocation;
+  const [message, setMessage] = useState("");
+  const supportsGeoLocation = navigator.geolocation;
 
+  // Función para texto a voz
+  const speak = (text) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "es-CO"; // Configura el idioma de la voz
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.error("Tu navegador no soporta síntesis de voz.");
+    }
+  };
+
+  // Comandos en español colombiano
   const commands = [
     {
-      command: "what time is it",
+      command: "¿Qué hora es?",
       callback: () => {
         const currentDate = new Date();
-        setMessage(`Current time is: ${currentDate.toISOString()}`);
+        const time = currentDate.toLocaleTimeString("es-CO");
+        const response = `La hora actual es: ${time}`;
+        setMessage(response);
+        speak(response); // Responde con voz
       },
     },
     {
       command: [
-        "I would like to order * (please)",
-        "I want to order * (please)",
-        "Can I get * (please)",
+        "Quiero pedir * (por favor)",
+        "Me gustaría pedir * (por favor)",
+        "¿Puedo obtener *? (por favor)",
       ],
-      callback: (comida) => setMessage(`Cooking ${comida}`),
+      callback: (comida) => {
+        const response = `Preparando ${comida}`;
+        setMessage(response);
+        speak(response); // Responde con voz
+      },
+    },
+    {
+      command: "¿Dónde estoy?",
+      callback: () => {
+        if (supportsGeoLocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const latitude = position.coords.latitude;
+              const longitude = position.coords.longitude;
+              const response = `Estás en Latitud: ${latitude}, Longitud: ${longitude}`;
+              setMessage(response);
+              speak(response); // Responde con voz
+            },
+            (error) => {
+              const errorMessage =
+                "No se pudo obtener la ubicación. Asegúrate de permitir el acceso a la geolocalización.";
+              setMessage(errorMessage);
+              speak(errorMessage); // Responde con voz
+            }
+          );
+        } else {
+          const errorMessage = "Geolocalización no soportada en este navegador.";
+          setMessage(errorMessage);
+          speak(errorMessage); // Responde con voz
+        }
+      },
     },
   ];
-
-  if (supporstGeoLocation) {
-    commands.push({
-      command: "where am I",
-      callback: () => {
-        navigator.geolocation.getCurrentPosition((position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          setMessage(`Latitud: ${latitude}, Longitud: ${longitude}`);
-        });
-      },
-    });
-  }
 
   const {
     transcript,
@@ -55,10 +87,9 @@ function App() {
 
   const startListening = () => {
     resetTranscript();
-    setMessage();
+    setMessage("");
     SpeechRecognition.startListening({
-      // Comandos no funcionan con es-HN
-      // language: "es-HN",
+      language: "es-CO", // Configura el idioma a español colombiano
       continuous: true,
     });
   };
@@ -68,7 +99,7 @@ function App() {
   };
 
   if (!browserSupportsSpeechRecognition) {
-    return <div>Broswer is not supported!</div>;
+    return <div>¡Tu navegador no soporta reconocimiento de voz!</div>;
   }
 
   const Icon = listening ? MicIcon : MicOffIcon;
@@ -79,8 +110,8 @@ function App() {
         <Tooltip
           title={
             listening
-              ? "Listening..."
-              : "Keep button pressed to start listening"
+              ? "Escuchando..."
+              : "Mantén presionado el botón para empezar a escuchar"
           }
         >
           <IconButton
