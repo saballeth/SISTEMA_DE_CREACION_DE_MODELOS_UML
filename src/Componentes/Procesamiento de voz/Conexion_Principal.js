@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Procesamiento_de_voz from "./Procesamiento de voz";
+import Procesamiento_de_voz from "./Procesamiento_de_voz";
 import ComponentePrincipal from "../Principal/Principal";
 
-function App() {
+function Conexion_principal() {
   const [teclas, setTeclas] = useState({
     arriba: "w",
     abajo: "s",
@@ -12,10 +12,10 @@ function App() {
 
   return (
     <div>
-      <Procesamiento_de_voz setTeclas={setTeclas} />
       <ComponentePrincipal teclas={teclas} />
+      <Procesamiento_de_voz setTeclas={setTeclas} />
     </div>
   );
 }
 
-export default App;
+export default Conexion_principal;
