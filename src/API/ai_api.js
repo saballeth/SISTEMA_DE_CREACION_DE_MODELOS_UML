@@ -1,42 +1,31 @@
-// const axios = require('axios');
-import React, { useState } from 'react';
-import { fetchChatResponse } from './deepseekService';
-
-
-
-// const openai = new OpenAI({
-//     baseURL: 'https://api.deepseek.com',
-//     apiKey: apiKeyDeepSeek
-// });
-
-// async function main() {
-//     const completion = await openai.chat.completions.create({
-//       messages: [{ role: "system", content: "You are a helpful assistant." }],
-//       model: "deepseek-chat",
-//     });
-  
-//     console.log(completion.choices[0].message.content);
-// }
+import React, { useState } from "react";
+import { fetchChatResponse } from "./deepseek_service";
 
 const Chat = () => {
-  const [userMessage, setUserMessage] = useState('');
-  const [chatResponse, setChatResponse] = useState('');
+  const [userMessage, setUserMessage] = useState("");
+  const [chatResponse, setChatResponse] = useState("");
   const [loading, setLoading] = useState(false);
+
   const handleSendMessage = async () => {
     if (!userMessage.trim()) return;
     setLoading(true);
+    setChatResponse("Loading...");
+    console.log("Sending message:", userMessage);
+
     try {
       const response = await fetchChatResponse(userMessage);
-      setChatResponse(response.messages[0]?.content || 'No response');
+      console.log("OpenRouter response:", response);
+      setChatResponse(response);
     } catch (error) {
-      setChatResponse('An error occurred. Please try again.');
+      setChatResponse("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Deepseek Chat</h1>
+    <div style={{ padding: "20px" }}>
+      <h1>OpenRouter Chat</h1>
       <textarea
         rows="4"
         cols="50"
@@ -46,13 +35,16 @@ const Chat = () => {
       />
       <br />
       <button onClick={handleSendMessage} disabled={loading}>
-        {loading ? 'Sending...' : 'Send'}
+        {loading ? "Sending..." : "Send"}
       </button>
-      <div style={{ marginTop: '20px' }}>
-        <h3>Response:</h3>
-        <p>{chatResponse}</p>
+      <div style={{ marginTop: "20px" }}>
+        <h3>Response (PlantUML Code):</h3>
+        <pre style={{ backgroundColor: "#f4f4f4", padding: "10px", borderRadius: "5px" }}>
+          <code>{chatResponse}</code>
+        </pre>
       </div>
     </div>
   );
 };
+
 export default Chat;
