@@ -11,69 +11,88 @@ body {
   height: 100vh;
 }
 
-/* Sección izquierda */
+/* Sidebar */
 .sidebar {
-  width: 33%;
-  padding: 16px;
-  /*border-right: 2px solid #ccc;*/
-  background-color: #f9f9f9;
-}
-
-.sidebar h2 {
-  font-size: 22px; 
-  font-weight: bold;
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar ul {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
-  margin-top: 16px;
 }
 
 .sidebar li {
+  margin-bottom: 10px;
   cursor: pointer;
-  padding: 8px 0;
-  transition: color 0.3s ease;
-  font-size: 25px; 
+  padding: 10px;
+  border: 2px solid transparent;
 }
 
-.sidebar li:hover {
-  color: #d9534f;
+.sidebar li.focused {
+  border-color: #007bff; /* Resaltar el elemento enfocado */
+  background-color: #e9ecef;
 }
 
-.sidebar li:first-child {
-  color: red;
-}
-
-/* Sección derecha */
+/* Contenido principal */
 .content {
-  width: 100%;
-  padding: 16px;
-  display: flex;
-  align-items: flex-start;
+  flex: 1;
+  padding: 20px;
 }
 
 .buttons {
-  display: inline-flex;
-  gap: 46px;
-  flex-direction: row-reverse;
+  display: flex;
+  gap: 10px;
 }
 
 .buttons button {
+  padding: 10px 20px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  background: none;
-  border: none;
-  color: #555;
-  cursor: pointer;
-  font-size: 30px;
-  transition: color 0.3s ease;
+  gap: 5px;
 }
 
-.buttons button:hover {
-  color: #000;
+.buttons button.focused {
+  border-color: #007bff; /* Resaltar el botón enfocado */
+  background-color: #e9ecef;
 }
 
-.buttons button span {
-  margin-right: 8px;
+/* Estilos para el contenedor del micrófono */
+.microphone-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Estilos para el mensaje de voz */
+.voice-message {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+/* Estilos para el botón del micrófono */
+.microphone-button {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  padding: 15px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.microphone-button:hover {
+  background-color: rgba(255, 255, 255, 1);
 }
