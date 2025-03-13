@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+/*import OpenAI from "openai";
 
 const client = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -27,4 +27,4 @@ export const fetchChatResponse = async (message) => {
     console.error("Error fetching chat response:", error);
     return "An error occurred. Please try again.";
   }
-};
+};*/
