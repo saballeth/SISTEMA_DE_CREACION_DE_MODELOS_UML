@@ -23,11 +23,11 @@ function ComponentePrincipal() {
   // Función para texto a voz con pausas usando espacios
   const speak = (text) => {
     if ("speechSynthesis" in window) {
-      const phrases = text.split("..."); // Dividir el texto en frases
-      const utterance = new SpeechSynthesisUtterance(phrases.join("   ")); // Unir con espacios para pausas
-      utterance.lang = "es-MX"; // Configura el idioma de la voz
-      utterance.volume = 1; // Asegurar que el volumen esté al máximo
-      window.speechSynthesis.cancel(); // Cancela cualquier mensaje pendiente
+      const phrases = text.split("...");
+      const utterance = new SpeechSynthesisUtterance(phrases.join("   "));
+      utterance.lang = "es-MX";
+      utterance.volume = 1;
+      window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
     } else {
       console.error("Tu navegador no soporta síntesis de voz.");
@@ -36,40 +36,35 @@ function ComponentePrincipal() {
 
   // Función para formatear el texto del diagrama
   const formatDiagramText = (diagramText) => {
-    // Extraer el número entre paréntesis
     const match = diagramText.match(/\((\d+)\)/);
     const count = match ? parseInt(match[1], 10) : 0;
-
-    // Reemplazar el número con "no hay diagramas aquí" o el número
     const description = count === 0 ? "no hay diagramas aquí" : `hay ${count} diagramas`;
     return diagramText.replace(/\(\d+\)/, description);
   };
 
-  // Función para mover el foco a un diagrama específico
+  // Mover foco a un diagrama
   const focusDiagram = (index) => {
     if (diagramRefs.current[index]) {
       diagramRefs.current[index].focus();
       setSelectedDiagram(index);
 
-      // Formatear el texto del diagrama
       const formattedText = formatDiagramText(diagrams[index]);
       speak(`Estás en ${formattedText}... opción ${actions[selectedAction]}`);
     }
   };
 
-  // Función para mover el foco a una acción específica
+  // Mover foco a una acción
   const focusAction = (index) => {
     if (actionRefs.current[index]) {
       actionRefs.current[index].focus();
       setSelectedAction(index);
 
-      // Formatear el texto del diagrama
       const formattedText = formatDiagramText(diagrams[selectedDiagram]);
       speak(`Estás en ${formattedText}... opción ${actions[index]}`);
     }
   };
 
-  // Comandos de voz para mover el foco
+  // Comandos de voz
   const commands = [
     {
       command: "mover a diagrama de flujo",
@@ -101,7 +96,7 @@ function ComponentePrincipal() {
     },
   ];
 
-  // Efecto para manejar las teclas
+  // Manejo de teclas
   useEffect(() => {
     const handleKeyDown = (event) => {
       switch (event.key) {
@@ -130,8 +125,24 @@ function ComponentePrincipal() {
 
   return (
     <div className="container">
-      {/* Sidebar con los diagramas */}
+      {/* Barra lateral (fondo oscuro) con botones + lista de diagramas + micrófono */}
       <div className="sidebar">
+        {/* Botones de acciones */}
+        <div className="buttons">
+          {actions.map((action, index) => (
+            <button
+              key={index}
+              tabIndex={0}
+              ref={(el) => (actionRefs.current[index] = el)}
+              className={selectedAction === index ? "focused" : ""}
+              onFocus={() => focusAction(index)}
+            >
+              <span>{index === 0 ? "📄" : index === 1 ? "🗑️" : "⚙️"}</span> {action}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista de diagramas */}
         <ul>
           {diagrams.map((diagram, index) => (
             <li
@@ -145,27 +156,27 @@ function ComponentePrincipal() {
             </li>
           ))}
         </ul>
+
+        {/* Micrófono al final de la barra lateral */}
+        <Procesamiento_de_voz commands={commands} />
       </div>
 
-      {/* Contenido principal con los botones de acciones */}
+      {/* Área central (fondo blanco) - Podrías mostrar aquí tus diagramas */}
       <div className="content">
-        <div className="buttons">
-          {actions.map((action, index) => (
-            <button
-              key={index}
-              tabIndex={0}
-              ref={(el) => (actionRefs.current[index] = el)}
-              className={selectedAction === index ? "focused" : ""}
-              onFocus={() => focusAction(index)}
-            >
-              <span>{index === 0 ? '📄' : index === 1 ? '🗑️' : '⚙️'}</span> {action}
-            </button>
-          ))}
+        {/* Solo un espacio en blanco por ahora */}
+      </div>
+
+      {/* Panel derecho (fondo gris) con Explorador + Código Plant UML */}
+      <div className="right-panel">
+        <div className="explorer">
+          <h2>Explorador</h2>
+          <p>Diagrama seleccionado: {diagrams[selectedDiagram]}</p>
+        </div>
+        <div className="plantuml">
+          <h2>Código Plant UML</h2>
+          <textarea placeholder="Aquí saldra tu codigo UML..." />
         </div>
       </div>
-
-      {/* Componente de reconocimiento de voz */}
-      <Procesamiento_de_voz commands={commands} />
     </div>
   );
 }
