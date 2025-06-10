@@ -76,7 +76,7 @@ class JsonPuml:
             plant_uml = os.path.join(self._plant_uml_path, self._plant_uml_version)
 
         # Guardar el código PlantUML en un archivo
-            with open(out, "+w", encoding="utf-8") as output:
+            with open(out, "w", encoding="utf-8") as output:
                 output.write(self._code)
 
         # Ejecutar PlantUML para generar la imagen
@@ -122,37 +122,41 @@ class JsonPuml:
             sys.exit(1)
 
 
-    def _json_to_plantuml(self) -> str:
-        """
-        Convierte los datos JSON a código PlantUML.
-
-        Dependiendo del tipo de diagrama especificado en los datos JSON (como 'classDiagram' o 'useCaseDiagram'),
-        este método genera el código correspondiente en el formato PlantUML.
-
-        Returns:
-            str: El código PlantUML generado a partir de los datos JSON.
-        """
+    def _json_to_plantuml(self):
         try:
-        # Iniciar el código PlantUML
+            # Iniciar el código PlantUML
             plantuml_str = "@startuml Diagram\n"
 
-        # Decodificar los datos en función del tipo de diagrama
-            if self._data["diagramType"] == "classDiagram":
-                decode_class = DecodeClass(self._data)
-                plantuml_str += decode_class.get_code()
-            elif self._data["diagramType"] == "useCaseDiagram":
-                decode_use_case = DecodeUseCase(self._data)
-                plantuml_str += decode_use_case.get_code()
+            # Decodificar los datos en función del tipo de diagrama
+            diagram_type = self._data.get("diagramType", "")
+            if diagram_type == "classDiagram":
+                from decoder import DecodeClass
+                plantuml_str += DecodeClass(self._data).get_code()
+            elif diagram_type == "useCaseDiagram":
+                from decoder import DecodeUseCase
+                plantuml_str += DecodeUseCase(self._data).get_code()
+            elif diagram_type == "sequenceDiagram":
+                from decoder import DecodeSequence
+                plantuml_str += DecodeSequence(self._data).get_code()
+            elif diagram_type == "activityDiagram":
+                from decoder import DecodeActivity
+                plantuml_str += DecodeActivity(self._data).get_code()
+            elif diagram_type == "stateDiagram":
+                from decoder import DecodeState
+                plantuml_str += DecodeState(self._data).get_code()
+            else:
+                raise ValueError(f"Tipo de diagrama '{diagram_type}' no soportado.")
+
         # Finalizar el código PlantUML
             plantuml_str += "@enduml"
             return plantuml_str
+
         except KeyError as e:
             print(f"Error, falta la clave {e} en los datos JSON")
             sys.exit(1)
         except Exception as e:
             print(f"Error inesperado al convertir JSON a PlantUML: {e}")
             sys.exit(1)
-    
 
 class DecodeUseCase:
     """
@@ -221,8 +225,6 @@ class DecodeUseCase:
             print(f"Error inesperado al generar el codigo PlantUML: {e}")
             sys.exit(1)
     
-
-
     def _decodeUseCaseActor(self, current_code: str, data) -> str:
         """
         Decodifica un actor y lo convierte a código PlantUML.
@@ -271,7 +273,7 @@ class DecodeUseCase:
             if usecase_name:
                 usecase_business = "/" if data.get("business", False) else ""
                 usecase_alias = data.get("alias", "")
-                usecase_stereotype = actor_stereotype = f' <<{data["stereotype"]}>>' if "stereotype" in data else ""
+                usecase_stereotype = f' <<{data["stereotype"]}>>' if "stereotype" in data else ""
                 if usecase_alias:
                     plantuml_str += f'usecase{usecase_business} (\"{usecase_name}\") as {usecase_alias} {usecase_stereotype}\n'
     
@@ -488,3 +490,58 @@ class DecodeClass:
             print(f"Error inesperado al generar codigo PlantUML: {e}")
             sys.exit(1)
 
+class DecodeSequence:
+    def __init__(self, data: dict):
+        self._data = data
+
+    def get_code(self) -> str:
+        code = ""
+        participants = self._data.get("participants", [])
+        for p in participants:
+            code += f"participant {p}\n"
+        for msg in self._data.get("messages", []):
+            frm = msg.get("from")
+            to = msg.get("to")
+            txt = msg.get("text", "")
+            code += f"{frm} -> {to}: {txt}\n"
+        return code
+
+class DecodeActivity:
+    def __init__(self, data: dict):
+        self._data = data
+
+    def get_code(self) -> str:
+        code = ""
+        for step in self._data.get("steps", []):
+            typ = step.get("type")
+            name = step.get("name")
+            if typ == "start":
+                code += "start\n"
+            elif typ == "action":
+                code += f":{name};\n"
+            elif typ == "decision":
+                code += f"if ({name}) then (yes)\n"
+                for act in step.get("yes", []):
+                    code += f":{act};\n"
+                code += "else (no)\n"
+                for act in step.get("no", []):
+                    code += f":{act};\n"
+                code += "endif\n"
+            elif typ == "stop":
+                code += "stop\n"
+        return code
+
+class DecodeState:
+    def __init__(self, data: dict):
+        self._data = data
+
+    def get_code(self) -> str:
+        code = ""
+        for st in self._data.get("states", []):
+            code += f"state {st['name']}\n"
+        for tr in self._data.get("transitions", []):
+            frm = tr.get("from")
+            to = tr.get("to")
+            label = tr.get("trigger", "")
+            code += f"{frm} --> {to} : {label}\n"
+        return code
