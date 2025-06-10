@@ -1,0 +1,2 @@
+plantuml       # Para poder invocar plantuml desde Python si lo integras luego
+python-dotenv  # (Opcional) si usas un .env para rutas o configuraciones
