@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from Modulo_de_IA.analisis_Imagen.Analisis_imagen import ClasificadorImagen
-from Modulo_de_IA.analisis_voz.Analisis_voz import ClasificadorPLN
+from backend.Modulo_de_IA.analisis_voz.AnalisisVoz import ClasificadorPLN
 app = Flask(__name__)
 
 clasificador_imagen = ClasificadorImagen("ruta_al_modelo/best.pt")
