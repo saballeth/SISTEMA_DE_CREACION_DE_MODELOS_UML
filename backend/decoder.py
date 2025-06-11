@@ -3,37 +3,12 @@ import json
 import os
 import subprocess
 import sys
+from decoder import DecodeClass, DecodeUseCase, DecodeSequence, DecodeActivity, DecodeState
 
 class JsonPuml:
-    """
-    Clase para generar diagramas PlantUML a partir de un archivo JSON.
-    
-    Esta clase lee los datos de un archivo JSON, los convierte en código PlantUML,
-    y luego ejecuta PlantUML para generar la imagen correspondiente en el formato especificado.
-
-    Atributos:
-        _plant_uml_path (str): Ruta donde se encuentra el archivo JAR de PlantUML.
-        _plant_uml_version (str): Nombre del archivo JAR de PlantUML (por ejemplo, "plantuml-1.2025.2.jar").
-        _json_path (str): Ruta del archivo JSON que contiene la configuración y datos del diagrama.
-        _output_path (str): Ruta donde se generará el archivo de salida (diagrama generado).
-        _diagram_name (str): Nombre del diagrama (se usa para el archivo .puml de entrada y el archivo de salida).
-        _data (dict): Datos leídos desde el archivo JSON.
-        _code (str): Código PlantUML generado a partir de los datos del JSON.
-    """
 
     def __init__(self, config: dict):
-        """
-        Inicializa la clase con la configuración proporcionada en el diccionario `config`.
 
-        Parámetros:
-            config (dict): Diccionario con las rutas y configuraciones necesarias.
-                           El diccionario debe contener las siguientes claves:
-                           - 'plant_uml_path': Ruta al directorio donde se encuentra el archivo JAR de PlantUML.
-                           - 'plant_uml_version': Nombre del archivo JAR de PlantUML (ejemplo: 'plantuml-1.2025.2.jar').
-                           - 'json_path': Ruta al archivo JSON que contiene los datos del diagrama.
-                           - 'output_path': Ruta donde se generará el archivo de salida.
-                           - 'diagram_name': Nombre del diagrama a generar.
-        """
         try:
             self._plant_uml_path = config['plant_uml_path']
             self._plant_uml_version = config['plant_uml_version']
@@ -57,14 +32,7 @@ class JsonPuml:
 
 
     def generate_diagram(self):
-        """
-        Genera el diagrama a partir del código PlantUML.
-
-        Este método:
-        1. Crea la carpeta de salida si no existe.
-        2. Guarda el código PlantUML en un archivo `.puml`.
-        3. Ejecuta PlantUML para generar el diagrama en el formato deseado.
-        """
+        
         try:
         # Crear la carpeta de salida si no existe
             os.makedirs(self._output_path, exist_ok=True)
@@ -98,15 +66,7 @@ class JsonPuml:
 
 
     def _get_data(self) -> dict:
-        """
-        Carga los datos del archivo JSON.
 
-        Este método abre el archivo JSON especificado en la configuración,
-        lee los datos y los devuelve como un diccionario.
-
-        Returns:
-            dict: Los datos cargados del archivo JSON.
-        """
         try:
             with open(self._json_path, "r", encoding="utf-8") as input:
                 data = json.load(input)
@@ -122,41 +82,33 @@ class JsonPuml:
             sys.exit(1)
 
 
-    def _json_to_plantuml(self):
-        try:
-            # Iniciar el código PlantUML
-            plantuml_str = "@startuml Diagram\n"
+    class DiagramGenerator:
+        def __init__(self, raw_data: dict, detected_type: str = None):
+            self._data = raw_data
+            self._diagram_type = detected_type or self._data.get("diagramType", "")
 
-            # Decodificar los datos en función del tipo de diagrama
-            diagram_type = self._data.get("diagramType", "")
-            if diagram_type == "classDiagram":
-                from decoder import DecodeClass
-                plantuml_str += DecodeClass(self._data).get_code()
-            elif diagram_type == "useCaseDiagram":
-                from decoder import DecodeUseCase
-                plantuml_str += DecodeUseCase(self._data).get_code()
-            elif diagram_type == "sequenceDiagram":
-                from decoder import DecodeSequence
-                plantuml_str += DecodeSequence(self._data).get_code()
-            elif diagram_type == "activityDiagram":
-                from decoder import DecodeActivity
-                plantuml_str += DecodeActivity(self._data).get_code()
-            elif diagram_type == "stateDiagram":
-                from decoder import DecodeState
-                plantuml_str += DecodeState(self._data).get_code()
-            else:
-                raise ValueError(f"Tipo de diagrama '{diagram_type}' no soportado.")
+        def generate(self) -> str:
+            try:
+                plantuml_str = "@startuml Diagram\n"
+            
+                if self._diagram_type == "classDiagram":
+                    plantuml_str += DecodeClass(self._data).get_code()
+                elif self._diagram_type == "useCaseDiagram":
+                    plantuml_str += DecodeUseCase(self._data).get_code()
+                elif self._diagram_type == "sequenceDiagram":
+                    plantuml_str += DecodeSequence(self._data).get_code()
+                elif self._diagram_type == "activityDiagram":
+                    plantuml_str += DecodeActivity(self._data).get_code()
+                elif self._diagram_type == "stateDiagram":
+                    plantuml_str += DecodeState(self._data).get_code()
+                else:
+                    raise ValueError(f"Tipo de diagrama '{self._diagram_type}' no soportado.")
+            
+                plantuml_str += "@enduml"
+                return plantuml_str
 
-        # Finalizar el código PlantUML
-            plantuml_str += "@enduml"
-            return plantuml_str
-
-        except KeyError as e:
-            print(f"Error, falta la clave {e} en los datos JSON")
-            sys.exit(1)
-        except Exception as e:
-            print(f"Error inesperado al convertir JSON a PlantUML: {e}")
-            sys.exit(1)
+            except Exception as e:
+                raise RuntimeError(f"Error generando código PlantUML: {e}")
 
 class DecodeUseCase:
     """
