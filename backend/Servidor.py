@@ -1,29 +1,21 @@
-from flask import send_file
-from diagram_generator import DiagramGenerator  # Importa tu clase que genera PlantUML
+from flask import Flask, request, jsonify
+from Modulo_de_IA.analisis_Imagen.Analisis_imagen import ClasificadorImagen
+from Modulo_de_IA.analisis_voz.Analisis_voz import ClasificadorPLN
+app = Flask(__name__)
 
-@app.route("/api/generate_from_image", methods=["POST"])
-def generate_from_image():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+clasificador_imagen = ClasificadorImagen("ruta_al_modelo/best.pt")
+clasificador_texto = ClasificadorPLN()
 
-    file = request.files["file"]
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
+@app.route('/clasificar/imagen', methods=['POST'])
+def clasificar_imagen():
+    imagen = request.files['imagen']
+    path = "temp.jpg"
+    imagen.save(path)
+    tipo = clasificador_imagen.predecir(path)
+    return jsonify({"tipo_diagrama": tipo})
 
-    detected_type = predict_image(path)  # Usa tu modelo YOLOv8 aquí
-    dummy_data = {}  # Aquí deberás construir o inferir datos (a futuro) para cada tipo de diagrama
-    plantuml = DiagramGenerator(dummy_data, detected_type).generate()
-
-    return jsonify({"type": detected_type, "plantuml": plantuml})
-
-@app.route("/api/generate_from_text", methods=["POST"])
-def generate_from_text():
-    text = request.json.get("text", "")
-    if not text:
-        return jsonify({"error": "Missing text"}), 400
-
-    detected_type = predict_text(text)
-    dummy_data = {}  # Simulador (a reemplazar cuando tengas datos reales)
-    plantuml = DiagramGenerator(dummy_data, detected_type).generate()
-
-    return jsonify({"type": detected_type, "plantuml": plantuml})
+@app.route('/clasificar/texto', methods=['POST'])
+def clasificar_texto():
+    texto = request.json.get("descripcion", "")
+    tipo = clasificador_texto.predecir(texto)
+    return jsonify({"tipo_diagrama": tipo})
